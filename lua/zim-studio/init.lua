@@ -5,7 +5,7 @@ M.config = {
   auto_play = true,
   float_opts = {
     width = 0.8,
-    height = 0.8,
+    height = 0.9,  -- Increased height to show all UI elements
     border = 'rounded',
   },
   integrate_oil = true,
@@ -86,7 +86,7 @@ function M.play(file)
   -- Use floaterm if available
   if vim.fn.exists(':FloatermNew') == 2 then
     local float_cmd = string.format(
-      'FloatermNew --width=%f --height=%f --title=ZIM --autoclose=0 %s',
+      'FloatermNew --width=%f --height=%f --title=ZIM --autoclose=2 %s',
       M.config.float_opts.width,
       M.config.float_opts.height,
       cmd
@@ -99,6 +99,7 @@ function M.play(file)
       cmd = cmd,
       direction = 'float',
       float_opts = M.config.float_opts,
+      close_on_exit = true,
       on_open = function(term)
         vim.cmd('startinsert!')
       end,
@@ -168,7 +169,19 @@ function M._open_float_term(cmd)
   }
   
   local win = vim.api.nvim_open_win(buf, true, opts)
-  vim.fn.termopen(cmd)
+  
+  -- Set up terminal with auto-close on exit
+  local job_id = vim.fn.termopen(cmd, {
+    on_exit = function(_, exit_code, _)
+      -- Close the window when process exits
+      vim.schedule(function()
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
+      end)
+    end,
+  })
+  
   vim.cmd('startinsert')
   
   -- Set up keymaps for the terminal buffer

@@ -54,7 +54,7 @@ require('zim-studio').setup({
   -- Float window configuration
   float_opts = {
     width = 0.8,
-    height = 0.8,
+    height = 0.9,  -- Tall enough for all UI elements
     border = 'rounded',
   },
   
