@@ -1,0 +1,18 @@
+# Vim/Neovim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.wav
+*.flac
+*.mp3
+
+# Temporary files
+*.tmp
+*.bak

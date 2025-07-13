@@ -1,0 +1,103 @@
+*zim-studio.txt*  Neovim plugin for zim-studio integration
+
+Author:  navicore
+License: MIT
+
+INTRODUCTION                                    *zim-studio*
+
+This plugin integrates zim-studio audio project management into Neovim,
+providing seamless audio file playback and project management commands.
+
+COMMANDS                                        *zim-studio-commands*
+
+:ZimPlay [file]                                 *:ZimPlay*
+    Open the specified audio file in zim player. If no file is specified,
+    uses the current buffer's file. Only works with .wav and .flac files.
+
+:ZimUpdate                                      *:ZimUpdate*
+    Run `zim update .` in the current directory to update sidecar files
+    for all audio files.
+
+:ZimNew {name}                                  *:ZimNew*
+    Create a new zim project with the specified name.
+
+:ZimLint                                        *:ZimLint*
+    Run `zim lint` in the current directory to validate sidecar files.
+
+CONFIGURATION                                   *zim-studio-config*
+
+Use the setup function to configure the plugin:
+>lua
+    require('zim-studio').setup({
+      -- Automatically open audio files with zim player
+      auto_play = true,
+      
+      -- Float window configuration
+      float_opts = {
+        width = 0.8,
+        height = 0.8,
+        border = 'rounded',
+      },
+      
+      -- Integration with file managers
+      integrate_oil = true,
+      integrate_nvim_tree = true,
+    })
+<
+
+OPTIONS                                         *zim-studio-options*
+
+auto_play                                       *zim-studio.auto_play*
+    Type: boolean
+    Default: true
+    
+    When true, .wav and .flac files will automatically open in zim player
+    instead of being loaded into a buffer.
+
+float_opts                                      *zim-studio.float_opts*
+    Type: table
+    Default: { width = 0.8, height = 0.8, border = 'rounded' }
+    
+    Configuration for floating terminal windows. Width and height are
+    specified as fractions of the editor size (0.0 to 1.0).
+
+integrate_oil                                   *zim-studio.integrate_oil*
+    Type: boolean
+    Default: true
+    
+    Enable integration with oil.nvim file manager. When enabled, pressing
+    <CR> on audio files in oil will open them in zim player.
+
+integrate_nvim_tree                             *zim-studio.integrate_nvim_tree*
+    Type: boolean
+    Default: true
+    
+    Enable integration with nvim-tree file manager. When enabled, pressing
+    <CR> on audio files in nvim-tree will open them in zim player.
+
+INTEGRATIONS                                    *zim-studio-integrations*
+
+oil.nvim ~
+    When integrate_oil is enabled, the plugin overrides the <CR> mapping
+    in oil buffers to detect audio files and open them with zim player.
+
+nvim-tree ~
+    When integrate_nvim_tree is enabled, the plugin overrides the <CR>
+    mapping in NvimTree buffers to detect audio files and open them with
+    zim player.
+
+vim-floaterm ~
+    If vim-floaterm is installed, it will be used for floating terminal
+    windows. Otherwise, the plugin falls back to built-in terminal windows.
+
+toggleterm.nvim ~
+    If toggleterm.nvim is installed and vim-floaterm is not available,
+    toggleterm will be used for floating terminal windows.
+
+REQUIREMENTS                                    *zim-studio-requirements*
+
+- Neovim >= 0.8.0
+- zim-studio installed and available in PATH
+- vim-floaterm or toggleterm.nvim (optional, for better floating windows)
+
+vim:tw=78:ts=8:ft=help:norl:
