@@ -5,7 +5,7 @@ M.config = {
   auto_play = true,
   float_opts = {
     width = 0.8,
-    height = 0.9,  -- Increased height to show all UI elements
+    height = 0.95,  -- Nearly full height to accommodate save dialog
     border = 'rounded',
   },
   integrate_oil = true,

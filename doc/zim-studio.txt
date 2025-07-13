@@ -56,12 +56,12 @@ auto_play                                       *zim-studio.auto_play*
 
 float_opts                                      *zim-studio.float_opts*
     Type: table
-    Default: { width = 0.8, height = 0.9, border = 'rounded' }
+    Default: { width = 0.8, height = 0.95, border = 'rounded' }
     
     Configuration for floating terminal windows. Width and height are
     specified as fractions of the editor size (0.0 to 1.0). The default
-    height of 0.9 ensures all UI elements (browser search box, save dialog
-    filename box) are visible.
+    height of 0.95 ensures all UI elements are visible, including the
+    save dialog which requires significant vertical space.
 
 integrate_oil                                   *zim-studio.integrate_oil*
     Type: boolean
