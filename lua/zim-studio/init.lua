@@ -10,6 +10,7 @@ M.config = {
   },
   integrate_oil = true,
   integrate_nvim_tree = true,
+  integrate_ableton = true,
 }
 
 -- Setup function
@@ -39,18 +40,22 @@ function M._setup_commands()
   vim.api.nvim_create_user_command('ZimPlay', function(opts)
     M.play(opts.args)
   end, { nargs = '?', complete = 'file' })
-  
+
   vim.api.nvim_create_user_command('ZimUpdate', function()
     M.update()
   end, {})
-  
+
   vim.api.nvim_create_user_command('ZimNew', function(opts)
     M.new_project(opts.args)
   end, { nargs = 1 })
-  
+
   vim.api.nvim_create_user_command('ZimLint', function()
     M.lint()
   end, {})
+
+  vim.api.nvim_create_user_command('ZimAbleton', function(opts)
+    M.open_ableton(opts.args)
+  end, { nargs = '?', complete = 'file' })
 end
 
 -- Internal: Set up autocommands
@@ -149,6 +154,35 @@ function M.lint()
   end
 end
 
+-- Open Ableton Live project
+function M.open_ableton(file)
+  file = file or vim.fn.expand('%:p')
+  if file == '' then
+    vim.notify('No file specified', vim.log.levels.ERROR)
+    return
+  end
+
+  -- Check if file is an Ableton Live project
+  if not file:match('%.als$') then
+    vim.notify('Not an Ableton Live project: ' .. file, vim.log.levels.ERROR)
+    return
+  end
+
+  -- Use macOS open command to launch or switch to Ableton
+  local cmd = 'open ' .. vim.fn.shellescape(file)
+
+  -- Run in background without terminal window
+  vim.fn.jobstart(cmd, {
+    on_exit = function(_, exit_code, _)
+      if exit_code ~= 0 then
+        vim.notify('Failed to open Ableton Live project', vim.log.levels.ERROR)
+      else
+        vim.notify('Opening in Ableton Live: ' .. vim.fn.fnamemodify(file, ':t'), vim.log.levels.INFO)
+      end
+    end,
+  })
+end
+
 -- Internal: Open floating terminal (fallback)
 function M._open_float_term(cmd)
   local buf = vim.api.nvim_create_buf(false, true)
@@ -197,8 +231,8 @@ function M._setup_oil_integration()
       -- Only set up if oil is actually loaded
       local ok, oil = pcall(require, 'oil')
       if not ok then return end
-      
-      -- Override enter key for audio files
+
+      -- Override enter key for audio files and Ableton Live projects
       vim.keymap.set('n', '<CR>', function()
         local entry = oil.get_cursor_entry()
         if entry and entry.type == 'file' then
@@ -207,13 +241,17 @@ function M._setup_oil_integration()
             local dir = oil.get_current_dir()
             local full_path = dir .. entry.name
             M.play(full_path)
+          elseif ext == 'als' and M.config.integrate_ableton then
+            local dir = oil.get_current_dir()
+            local full_path = dir .. entry.name
+            M.open_ableton(full_path)
           else
             oil.select()
           end
         else
           oil.select()
         end
-      end, { buffer = true, desc = 'Open file or play audio' })
+      end, { buffer = true, desc = 'Open file, play audio, or launch Ableton' })
     end,
   })
 end
@@ -226,21 +264,23 @@ function M._setup_nvim_tree_integration()
     callback = function()
       local ok, api = pcall(require, 'nvim-tree.api')
       if not ok then return end
-      
-      -- Override enter key for audio files
+
+      -- Override enter key for audio files and Ableton Live projects
       vim.keymap.set('n', '<CR>', function()
         local node = api.tree.get_node_under_cursor()
         if node and node.type == 'file' then
           local ext = node.name:match('%.([^%.]+)$')
           if ext == 'wav' or ext == 'flac' then
             M.play(node.absolute_path)
+          elseif ext == 'als' and M.config.integrate_ableton then
+            M.open_ableton(node.absolute_path)
           else
             api.node.open.edit()
           end
         else
           api.node.open.edit()
         end
-      end, { buffer = true, desc = 'Open file or play audio' })
+      end, { buffer = true, desc = 'Open file, play audio, or launch Ableton' })
     end,
   })
 end
