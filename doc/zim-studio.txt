@@ -14,6 +14,11 @@ COMMANDS                                        *zim-studio-commands*
     Open the specified audio file in zim player. If no file is specified,
     uses the current buffer's file. Only works with .wav and .flac files.
 
+:ZimAbleton [file]                              *:ZimAbleton*
+    Open the specified Ableton Live project (.als file). If no file is
+    specified, uses the current buffer's file. Launches Ableton Live or
+    switches to existing instance on macOS.
+
 :ZimUpdate                                      *:ZimUpdate*
     Run `zim update .` in the current directory to update sidecar files
     for all audio files.
@@ -50,14 +55,14 @@ OPTIONS                                         *zim-studio-options*
 auto_play                                       *zim-studio.auto_play*
     Type: boolean
     Default: true
-    
+
     When true, .wav and .flac files will automatically open in zim player
     instead of being loaded into a buffer.
 
 float_opts                                      *zim-studio.float_opts*
     Type: table
     Default: { width = 0.8, height = 0.95, border = 'rounded' }
-    
+
     Configuration for floating terminal windows. Width and height are
     specified as fractions of the editor size (0.0 to 1.0). The default
     height of 0.95 ensures all UI elements are visible, including the
@@ -66,27 +71,37 @@ float_opts                                      *zim-studio.float_opts*
 integrate_oil                                   *zim-studio.integrate_oil*
     Type: boolean
     Default: true
-    
+
     Enable integration with oil.nvim file manager. When enabled, pressing
     <CR> on audio files in oil will open them in zim player.
 
 integrate_nvim_tree                             *zim-studio.integrate_nvim_tree*
     Type: boolean
     Default: true
-    
+
     Enable integration with nvim-tree file manager. When enabled, pressing
     <CR> on audio files in nvim-tree will open them in zim player.
+
+integrate_ableton                               *zim-studio.integrate_ableton*
+    Type: boolean
+    Default: true
+
+    Enable Ableton Live integration. When enabled, pressing <CR> on .als
+    files in oil or nvim-tree will launch or switch to Ableton Live on macOS.
 
 INTEGRATIONS                                    *zim-studio-integrations*
 
 oil.nvim ~
     When integrate_oil is enabled, the plugin overrides the <CR> mapping
     in oil buffers to detect audio files and open them with zim player.
+    When integrate_ableton is also enabled, .als files will launch or
+    switch to Ableton Live.
 
 nvim-tree ~
     When integrate_nvim_tree is enabled, the plugin overrides the <CR>
     mapping in NvimTree buffers to detect audio files and open them with
-    zim player.
+    zim player. When integrate_ableton is also enabled, .als files will
+    launch or switch to Ableton Live.
 
 vim-floaterm ~
     If vim-floaterm is installed, it will be used for floating terminal
