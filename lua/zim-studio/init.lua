@@ -72,21 +72,42 @@ function M._setup_autocommands()
   })
 end
 
--- Play audio file
-function M.play(file)
-  file = file or vim.fn.expand('%:p')
-  if file == '' then
+-- Play audio file(s)
+function M.play(files)
+  -- Handle single file or multiple files
+  if not files or files == '' then
+    files = vim.fn.expand('%:p')
+  end
+
+  -- Convert single file to table
+  if type(files) == 'string' then
+    files = { files }
+  end
+
+  if #files == 0 then
     vim.notify('No file specified', vim.log.levels.ERROR)
     return
   end
-  
-  -- Check if file is audio
-  if not file:match('%.wav$') and not file:match('%.flac$') then
-    vim.notify('Not an audio file: ' .. file, vim.log.levels.ERROR)
+
+  -- Filter and validate audio files
+  local audio_files = {}
+  for _, file in ipairs(files) do
+    if file:match('%.wav$') or file:match('%.flac$') then
+      table.insert(audio_files, file)
+    end
+  end
+
+  if #audio_files == 0 then
+    vim.notify('No audio files selected', vim.log.levels.ERROR)
     return
   end
-  
-  local cmd = 'zim play ' .. vim.fn.shellescape(file)
+
+  -- Build command with space-delimited file list
+  local file_args = {}
+  for _, file in ipairs(audio_files) do
+    table.insert(file_args, vim.fn.shellescape(file))
+  end
+  local cmd = 'zim play ' .. table.concat(file_args, ' ')
   
   -- Use floaterm if available
   if vim.fn.exists(':FloatermNew') == 2 then
@@ -232,7 +253,7 @@ function M._setup_oil_integration()
       local ok, oil = pcall(require, 'oil')
       if not ok then return end
 
-      -- Override enter key for audio files and Ableton Live projects
+      -- Override enter key for audio files and Ableton Live projects (normal mode)
       vim.keymap.set('n', '<CR>', function()
         local entry = oil.get_cursor_entry()
         if entry and entry.type == 'file' then
@@ -252,6 +273,56 @@ function M._setup_oil_integration()
           oil.select()
         end
       end, { buffer = true, desc = 'Open file, play audio, or launch Ableton' })
+
+      -- Handle visual mode multi-select
+      vim.keymap.set('v', '<CR>', function()
+        local dir = oil.get_current_dir()
+
+        -- Get visual selection range
+        local start_line = vim.fn.line('v')
+        local end_line = vim.fn.line('.')
+
+        -- Ensure start is before end
+        if start_line > end_line then
+          start_line, end_line = end_line, start_line
+        end
+
+        -- Collect all audio files and Ableton projects in selection
+        local audio_files = {}
+        local ableton_files = {}
+
+        for line = start_line, end_line do
+          -- Position cursor on line to get entry
+          vim.api.nvim_win_set_cursor(0, {line, 0})
+          local entry = oil.get_cursor_entry()
+
+          if entry and entry.type == 'file' then
+            local ext = entry.name:match('%.([^%.]+)$')
+            local full_path = dir .. entry.name
+
+            if ext == 'wav' or ext == 'flac' then
+              table.insert(audio_files, full_path)
+            elseif ext == 'als' and M.config.integrate_ableton then
+              table.insert(ableton_files, full_path)
+            end
+          end
+        end
+
+        -- Exit visual mode
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', false)
+
+        -- Play audio files if any were selected
+        if #audio_files > 0 then
+          M.play(audio_files)
+          if #ableton_files > 0 then
+            vim.notify('Note: Ableton files ignored in multi-select (audio files only)', vim.log.levels.WARN)
+          end
+        elseif #ableton_files > 0 then
+          vim.notify('Cannot open multiple Ableton projects at once', vim.log.levels.WARN)
+        else
+          vim.notify('No audio files in selection', vim.log.levels.WARN)
+        end
+      end, { buffer = true, desc = 'Play multiple audio files' })
     end,
   })
 end
