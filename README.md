@@ -86,3 +86,4 @@ When `integrate_nvim_tree` is enabled, pressing `<CR>` on audio files will open 
 ## License
 
 MIT
+
