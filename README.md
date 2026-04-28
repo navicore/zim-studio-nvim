@@ -1,3 +1,8 @@
+<!-- ghmig:moved -->
+> **This repository has moved to [https://git.navicore.tech/navicore/zim-studio-nvim](https://git.navicore.tech/navicore/zim-studio-nvim).**
+>
+> The GitHub copy is archived and no longer maintained.
+
 # zim-studio.nvim
 
 A Neovim plugin for integrating [zim-studio](https://github.com/navicore/zim-studio) into your workflow.
@@ -86,4 +91,3 @@ When `integrate_nvim_tree` is enabled, pressing `<CR>` on audio files will open 
 ## License
 
 MIT
-
